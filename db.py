@@ -430,3 +430,10 @@ def award_points(match_id: int, user_id: int, points: int):
             UPDATE predictions SET points = ?
             WHERE match_id = ? AND user_id = ?
         """, (points, match_id, user_id))
+def delete_user(identifier: str) -> bool:
+    with _conn() as c:
+        if identifier.startswith("@"):
+            c.execute("DELETE FROM users WHERE username = ?", (identifier[1:],))
+        else:
+            c.execute("DELETE FROM users WHERE display_name = ?", (identifier,))
+        return c.rowcount > 0
