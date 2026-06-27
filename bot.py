@@ -673,7 +673,16 @@ async def cmd_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         uname = f" (@{u['username']})" if u["username"] else ""
         lines.append(f"• {u['display_name']}{uname} — bonus: {u['bonus_points']} pts")
     await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
-
+@require_admin
+async def cmd_removeuser(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text("Usage: /removeuser <name or @username>")
+        return
+    identifier = " ".join(context.args)
+    if db.delete_user(identifier):
+        await update.message.reply_text(f"✅ User '{identifier}' removed.")
+    else:
+        await update.message.reply_text(f"❌ User '{identifier}' not found.")
 
 @require_admin
 async def cmd_chatid(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -990,6 +999,7 @@ def main():
     app.add_handler(CommandHandler("preds", cmd_preds))
     app.add_handler(CommandHandler("deletematch", cmd_deletematch))
     app.add_handler(CommandHandler("users", cmd_users))
+    app.add_handler(CommandHandler("removeuser", cmd_removeuser))
     app.add_handler(CommandHandler("chatid", cmd_chatid))
     app.add_handler(MessageHandler(filters.ALL & ~filters.COMMAND, auto_register))
 
