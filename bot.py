@@ -263,7 +263,7 @@ async def cmd_predict(update: Update, context: ContextTypes.DEFAULT_TYPE):
     match_id = int(args[0])
     pred_home, pred_away = map(int, args[1].split("-"))
     
-   pred_winner = None
+pred_winner = None
         if len(args) == 3:
             if pred_home != pred_away:
                 await update.message.reply_text("برنده رو فقط وقتی میتونی مشخص کنی که بازی رو مساوی پیشبینی کردی!")
