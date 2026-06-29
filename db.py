@@ -386,16 +386,17 @@ def delete_match(match_id: int) -> bool:
 
 # ── Predictions ───────────────────────────────────────────────────────────────
 
-def upsert_prediction(user_id: int, match_id: int, home_score: int, away_score: int):
+def upsert_prediction(user_id: int, match_id: int, home_score: int, away_score: int, pred_winner: int = None):
     with _conn() as c:
         c.execute("""
-            INSERT INTO predictions (user_id, match_id, home_score, away_score)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO predictions (user_id, match_id, home_score, away_score, pred_winner)
+            VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(user_id, match_id) DO UPDATE SET
-                home_score = excluded.home_score,
-                away_score = excluded.away_score,
-                points     = NULL
-        """, (user_id, match_id, home_score, away_score))
+                home_score   = excluded.home_score,
+                away_score   = excluded.away_score,
+                pred_winner  = excluded.pred_winner,
+                points       = NULL
+        """, (user_id, match_id, home_score, away_score, pred_winner))
 
 
 def get_user_predictions(user_id: int):
