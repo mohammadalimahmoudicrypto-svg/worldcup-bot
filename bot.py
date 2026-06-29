@@ -581,17 +581,27 @@ async def cmd_addmatch(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 @require_admin
+@require_admin
 async def cmd_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
     args = context.args
-    if len(args) != 2 or not SCORE_RE.match(args[1]):
+    if len(args) < 2 or not SCORE_RE.match(args[1]):
         await update.message.reply_text(
-            "Usage: `/result <match_id> <home>-<away>`\nExample: `/result 3 2-1`",
+            "Usage: `/result <match_id> <home>-<away> [winner]`\n"
+            "Example: `/result 3 2-1`\n"
+            "For draws: `/result 3 1-1 1` (1=home, 2=away)",
             parse_mode="Markdown",
         )
         return
 
     match_id = int(args[0])
     actual_home, actual_away = map(int, args[1].split("-"))
+    
+    actual_winner = None
+    if len(args) == 3:
+        if args[2] not in ("1", "2"):
+            await update.message.reply_text("Winner must be 1 (home) or 2 (away).")
+            return
+        actual_winner = int(args[2])
 
     match = db.get_match(match_id)
     if not match:
@@ -603,7 +613,7 @@ async def cmd_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
     preds = db.get_match_predictions(match_id)
     award_lines = []
     for p in preds:
-        pts = calculate_points(p["home_score"], p["away_score"], actual_home, actual_away)
+        pts = calculate_points(p["home_score"], p["away_score"], actual_home, actual_away, p.get("pred_winner"), actual_winner)
         db.award_points(match_id, p["user_id"], pts)
         award_lines.append(f"• {p['display_name']}: {p['home_score']}-{p['away_score']} → *{pts} pts*")
 
@@ -613,7 +623,6 @@ async def cmd_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"*Points awarded:*\n{summary}",
         parse_mode="Markdown",
     )
-
 
 @require_admin
 async def cmd_setbonus(update: Update, context: ContextTypes.DEFAULT_TYPE):
