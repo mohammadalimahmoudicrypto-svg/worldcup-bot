@@ -173,7 +173,17 @@ def init_db():
                 """)
             except Exception:
                 pass  # column already exists
-
+# Migration: add pred_winner if missing
+    with _conn() as c:
+        if _USE_PG:
+            c.execute("""
+                ALTER TABLE predictions ADD COLUMN IF NOT EXISTS pred_winner INTEGER
+            """)
+        else:
+            try:
+                c.execute("ALTER TABLE predictions ADD COLUMN pred_winner INTEGER")
+            except Exception:
+                pass  # column already exists
 
 # ── Users ─────────────────────────────────────────────────────────────────────
 
