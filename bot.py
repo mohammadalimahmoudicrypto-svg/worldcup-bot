@@ -263,15 +263,15 @@ async def cmd_predict(update: Update, context: ContextTypes.DEFAULT_TYPE):
     match_id = int(args[0])
     pred_home, pred_away = map(int, args[1].split("-"))
     
-    pred_winner = None
-if len(args) == 3:
-    if pred_home != pred_away:
-        await update.message.reply_text("برنده رو فقط وقتی میتونی مشخص کنی که بازی رو مساوی پیشبینی کردی!")
-        return
-    if args[2] not in ("1", "2"):
-        await update.message.reply_text("Winner must be 1 (home) or 2 (away).")
-        return
-    pred_winner = int(args[2])
+   pred_winner = None
+        if len(args) == 3:
+            if pred_home != pred_away:
+                await update.message.reply_text("برنده رو فقط وقتی میتونی مشخص کنی که بازی رو مساوی پیشبینی کردی!")
+                return
+            if args[2] not in ("1", "2"):
+                await update.message.reply_text("Winner must be 1 (home) or 2 (away).")
+                return
+            pred_winner = int(args[2])
 
     match = db.get_match(match_id)
     if not match:
