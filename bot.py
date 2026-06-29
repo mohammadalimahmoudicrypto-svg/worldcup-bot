@@ -251,16 +251,24 @@ async def _allmatches_callback(update: Update, context: ContextTypes.DEFAULT_TYP
 async def cmd_predict(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     args = context.args
-    if len(args) != 2 or not SCORE_RE.match(args[1]):
+    if len(args) < 2 or not SCORE_RE.match(args[1]):
         await update.message.reply_text(
-            "Usage: /predict <match\\_id> <home>-<away>\n"
-            "Example: `/predict 3 2-1`",
+            "Usage: /predict <match\\_id> <home>-<away> [winner]\n"
+            "Example: `/predict 3 2-1`\n"
+            "For draws: `/predict 3 1-1 1` (1=home wins, 2=away wins)",
             parse_mode="Markdown",
         )
         return
 
     match_id = int(args[0])
     pred_home, pred_away = map(int, args[1].split("-"))
+    
+    pred_winner = None
+    if len(args) == 3:
+        if args[2] not in ("1", "2"):
+            await update.message.reply_text("Winner must be 1 (home) or 2 (away).")
+            return
+        pred_winner = int(args[2])
 
     match = db.get_match(match_id)
     if not match:
@@ -271,11 +279,19 @@ async def cmd_predict(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     db_user = db.get_user(user.id)
-    db.upsert_prediction(db_user["id"], match_id, pred_home, pred_away)
+    db.upsert_prediction(db_user["id"], match_id, pred_home, pred_away, pred_winner)
+    
+    winner_str = ""
+    if pred_winner == 1:
+        winner_str = f" — {match['home_team']} to advance"
+    elif pred_winner == 2:
+        winner_str = f" — {match['away_team']} to advance"
+    
     await update.message.reply_text(
-        f"Saved: {_team(match['home_team'])} *{pred_home}–{pred_away}* {_team(match['away_team'])}",
+        f"Saved: {_team(match['home_team'])} *{pred_home}–{pred_away}* {_team(match['away_team'])}{winner_str}",
         parse_mode="Markdown",
     )
+
 
 
 def _pred_line(p):
