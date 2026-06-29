@@ -106,6 +106,7 @@ _SCHEMA_PG = """
         match_id    INTEGER NOT NULL REFERENCES matches(id),
         home_score  INTEGER NOT NULL,
         away_score  INTEGER NOT NULL,
+        pred_winner INTEGER,
         points      INTEGER,
         UNIQUE(user_id, match_id)
     );
@@ -138,6 +139,7 @@ _SCHEMA_SQLITE = """
         match_id    INTEGER NOT NULL REFERENCES matches(id),
         home_score  INTEGER NOT NULL,
         away_score  INTEGER NOT NULL,
+        pred_winner INTEGER,
         points      INTEGER,
         UNIQUE(user_id, match_id)
     );
